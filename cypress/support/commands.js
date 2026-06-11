@@ -3,6 +3,7 @@ import url from '../fixtures/url.json'
 const pageHome = require('../support/page_objects/pageHome')
 const componentNav = require('../support/page_objects/componentNav')
 const pageLogin = require('../support/page_objects/pageLogin')
+const pageBookDetail = require('../support/page_objects/pageBookDetail')
 
 Cypress.Commands.add('login', (name, password) => {
   pageLogin.typeUserName(name);
@@ -317,6 +318,69 @@ Cypress.Commands.add('buyAndVisualizeOrder',() => {
     cy.url().should('include', url.myOrders)
     cy.get('.mat-mdc-row').should('be.visible')
     cy.get('.mat-mdc-row').eq(0).click()
+
+    // ─── Comando: Filtrar Fantasy y verificar detalle | María Nuñez ──────────────
+Cypress.Commands.add('filtrarFantasyYVerificarDetalle', () => {
+  cy.visit(url.login)
+  cy.login(user.name, user.password)
+  cy.url().should('include', url.home)
+  pageHome.isBookVisible()
+  cy.contains('Fantasy').click()
+  cy.get('app-book-card').should('have.length.greaterThan', 0)
+  pageBookDetail.clickFirstBook()
+  pageBookDetail.isDetailPageVisible()
+  pageBookDetail.isBookTitleVisible()
+  pageBookDetail.isCategoryFantasy()
+  pageBookDetail.isAddToCartButtonVisible()
+})
+
+// ─── Comando: Checkout exitoso con login automático | María Nuñez ─────────────
+Cypress.Commands.add('checkoutExitosoAPI', () => {
+  cy.request({
+    method: 'POST',
+    url: `${url.api}login`,
+    failOnStatusCode: false,
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json'
+    },
+    body: { username: user.name, password: user.password }
+  }).then((loginResponse) => {
+    const token = `Bearer ${loginResponse.body.token}`
+    const userId = loginResponse.body.userDetails.userId
+
+    cy.request({
+      method: 'POST',
+      url: `${url.api}CheckOut/${userId}`,
+      failOnStatusCode: false,
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        authorization: token
+      },
+      body: {
+        orderDetails: [{
+          book: {
+            bookId: 15,
+            title: 'string',
+            author: 'string',
+            category: 'string',
+            price: 0,
+            coverFileName: 'string'
+          },
+          quantity: 1
+        }],
+        cartTotal: 0
+      }
+    }).then((response) => {
+      expect(response.status).to.eq(200)
+    })
+  })
+})
+
+// ─── Comando: Checkout sin token → 401 | María Nuñez ─────────────────────────
+Cypress.Commands.add('checkoutSinTokenAPI', () => {
+  cy.postCheckOutAPI(user.userID, '', 401)
 })
 
 

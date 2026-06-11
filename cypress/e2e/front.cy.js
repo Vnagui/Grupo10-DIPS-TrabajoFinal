@@ -19,9 +19,10 @@ describe('Casos de prueba de FRONT', () => {
     cy.eliminar_carrito();
   })
 
-  it('Filtrar por categoria fantasy | Maria Nuñez', () => {
-    cy.filtrar_fantasy();
+  it('Filtrar por categoría Fantasy y verificar detalle de libro | María Nuñez', () => {
+    cy.filtrarFantasyYVerificarDetalle()
   })
+
 
 
   it('Comprar carrito exitosamente y visualizar orden de compra | Magali Gonzalez', function () {
