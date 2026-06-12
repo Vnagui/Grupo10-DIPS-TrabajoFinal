@@ -2,7 +2,6 @@ import user from '../fixtures/user.json'
 import envUrls from '../fixtures/url.json';
 
 describe('Casos de prueba de APIs', () => {
-    // Se ejecuta UNA VEZ antes de todos los tests: obtiene token fresco
     before(function () {
         cy.loginAPI(user.name, user.password)
     })
@@ -22,6 +21,15 @@ describe('Casos de prueba de APIs', () => {
     it('Login API campo incorrecto | Matias Crespo', () => {
         cy.APIlogin('username', 'PasswordIncorrecta', 401);
     })
+
+    it('API | Checkout exitoso con datos válidos | María Nuñez', () => {
+        cy.checkoutExitosoAPI()
+    })
+
+    it('API | Error al comprar carrito sin token | María Nuñez', () => {
+        cy.checkoutSinTokenAPI()
+    })
+
 })
 
 it('API | Obtener catálogo de libros | Facundo Sosa', () => {

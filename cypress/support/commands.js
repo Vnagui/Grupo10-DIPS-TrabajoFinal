@@ -25,20 +25,17 @@ Cypress.Commands.add('deleteCartAPI', (userId) => {
   })
 })
 
-
 Cypress.Commands.add('postCheckOutAPI', (userId, token, codeResponse) => {
-
   cy.request({
     method: 'POST',
     url: `https://app.bookdbqa.online/api/CheckOut/${userId}`,
-    failOnStatusCode: false, // importante para que cypress no falle automaticamente ante un error 400 o 500
+    failOnStatusCode: false,
     headers: {
       accept: 'application/json',
       'content-type': 'application/json',
       authorization: token,
     },
-    body:
-    {
+    body: {
       "orderDetails": [
         {
           "book": {
@@ -57,7 +54,6 @@ Cypress.Commands.add('postCheckOutAPI', (userId, token, codeResponse) => {
   }).then((response) => {
     expect(response.status).to.eq(codeResponse)
   })
-
 })
 
 Cypress.Commands.add('APIlogin', (user, password, codeResponse) => {
@@ -78,51 +74,34 @@ Cypress.Commands.add('APIlogin', (user, password, codeResponse) => {
 });
 
 Cypress.Commands.add('eliminar_carrito', () => {
-  cy.visit(url.login);
-  cy.login(user.name, user.password);
-  cy.url().should('include', url.home);
+  cy.visit(url.home)
+  cy.url().should('include', url.home)
   pageHome.isBookVisible();
   pageHome.clickAddToCartButton();
   cy.contains('One Item added to cart').should('be.visible');
-
   cy.get('.mdc-icon-button.mat-mdc-icon-button.mat-mdc-button-base.mat-unthemed')
     .contains('shopping_cart')
     .click();
-
   cy.get('button[mattooltip="Delete item"]')
     .first()
     .click();
-
   cy.contains('Your shopping cart is empty')
     .should('be.visible');
 });
 
-Cypress.Commands.add('filtrar_fantasy', () => {
-  cy.visit(url.login)
-  cy.login(user.name, user.password);
-  cy.get('app-book-card').should('have.length.greaterThan', 0)
-  cy.contains('Fantasy').click()
-  cy.get('app-book-card').should('have.length.greaterThan', 0)
-  cy.contains('Fantasy').should('be.visible')
-})
-
 Cypress.Commands.add('loginByApi', (apiUrl, username, password) => {
   cy.request({
     method: 'POST',
-    url: `${apiUrl}/Login`, //la url se consigue del parámetro
-    body: { username, password } //lo mismo con el usuario y contraseña
+    url: `${apiUrl}/Login`,
+    body: { username, password }
   }).then((response) => {
     expect(response.status).to.eq(200);
-
-    //guarda el token de manera local en el browser.
-    //https://stackoverflow.com/questions/50820732/in-cypress-set-a-token-in-localstorage-before-test
     window.localStorage.setItem('authToken', response.body.token);
     Cypress.apiToken = response.body.token;
     Cypress.userID = response.body.userDetails.userID;
   });
 });
 
-// ─── Comando: Login via API (obtiene token fresco automáticamente) ────────────
 Cypress.Commands.add('loginAPI', (username, password) => {
   cy.request({
     method: 'POST',
@@ -139,14 +118,6 @@ Cypress.Commands.add('loginAPI', (username, password) => {
   })
 })
 
-// ─── Comando: Login via UI ───────────────────────────────────────────────────
-Cypress.Commands.add('login', (username, password) => {
-  cy.get('input[formcontrolname="username"]').type(username)
-  cy.get('input[formcontrolname="password"]').type(password)
-  cy.get('app-login button').contains('Login').click()
-})
-
-// ─── Comando: Eliminar carrito via API ───────────────────────────────────────
 Cypress.Commands.add('deleteCartAPI', (userId, token) => {
   cy.request({
     method: 'DELETE',
@@ -160,11 +131,10 @@ Cypress.Commands.add('deleteCartAPI', (userId, token) => {
   })
 })
 
-// ─── Comando: Eliminar wishlist via API ──────────────────────────────────────
-Cypress.Commands.add('deleteWishlistAPI', (userId, token) => {  // ✅ userId (minúscula)
+Cypress.Commands.add('deleteWishlistAPI', (userId, token) => {
   cy.request({
     method: 'DELETE',
-    url: `https://app.bookdbqa.online/api/Wishlist/${userId}`,  // ✅ userId (minúscula)
+    url: `https://app.bookdbqa.online/api/Wishlist/${userId}`,
     failOnStatusCode: false,
     headers: {
       accept: 'application/json',
@@ -174,55 +144,6 @@ Cypress.Commands.add('deleteWishlistAPI', (userId, token) => {  // ✅ userId (m
   })
 })
 
-Cypress.Commands.add('loginByApi', (apiUrl, username, password) => {
-  cy.request({
-    method: 'POST',
-    url: `${apiUrl}/Login`, //la url se consigue del parámetro
-    body: { username, password } //lo mismo con el usuario y contraseña
-  }).then((response) => {
-    expect(response.status).to.eq(200);
-
-    //guarda el token de manera local en el browser.
-    //https://stackoverflow.com/questions/50820732/in-cypress-set-a-token-in-localstorage-before-test
-    window.localStorage.setItem('authToken', response.body.token);
-    Cypress.apiToken = response.body.token;
-    Cypress.userID = response.body.userDetails.userID;
-  });
-});
-
-// ─── Comando: POST Checkout via API ─────────────────────────────────────────
-Cypress.Commands.add('postCheckOutAPI', (userId, token, expectedStatus) => {
-  cy.request({
-    method: 'POST',
-    url: `https://app.bookdbqa.online/api/CheckOut/${userId}`,
-    failOnStatusCode: false,
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-      authorization: token
-    },
-    body: {
-      orderDetails: [
-        {
-          book: {
-            bookId: 3,
-            title: 'Harry Potter y el prisionero de Azkaban',
-            author: 'JKR',
-            category: 'Romance',
-            price: 213,
-            coverFileName: 'c63ade52-3f90-41fa-980a-1136b6ad2128HP3.jpg'
-          },
-          quantity: 1
-        }
-      ],
-      cartTotal: 213
-    }
-  }).then((response) => {
-    expect(response.status).to.eq(expectedStatus)
-  })
-})
-
-// ─── Comando: POST Toggle Wishlist via API ───────────────────────────────────
 Cypress.Commands.add('postToggleWishlistAPI', (userId, bookId, token, expectedStatus) => {
   cy.request({
     method: 'POST',
@@ -239,7 +160,6 @@ Cypress.Commands.add('postToggleWishlistAPI', (userId, bookId, token, expectedSt
   })
 })
 
-//Credenciales inválidas por API
 Cypress.Commands.add('invalidAPILogin', (apiUrl, user) => {
   cy.request({
     method: 'POST',
@@ -254,7 +174,6 @@ Cypress.Commands.add('invalidAPILogin', (apiUrl, user) => {
   });
 })
 
-//Conseguir un libro por ID
 Cypress.Commands.add('getBookById', (apiUrl, bookId, failOnStatusCode = true) => {
   return cy.request({
     method: 'GET',
@@ -263,63 +182,40 @@ Cypress.Commands.add('getBookById', (apiUrl, bookId, failOnStatusCode = true) =>
   });
 });
 
-//Conseguir todos los libros
 Cypress.Commands.add('getBookList', (apiUrl) => {
   cy.request('GET', `${apiUrl}/Book`).then((response) => {
     expect(response.status).to.eq(200);
     expect(response.body).to.be.an('array');
-
-    //si hay al menos 1 libro, ya es correcto. Después verifica que ese libro tenga título e ID
     expect(response.body.length).to.be.greaterThan(0);
     expect(response.body[0]).to.have.property('bookId');
     expect(response.body[0]).to.have.property('title');
   });
 })
-//Comprar carrito exitosamente y visualizar orden de compra
 
-Cypress.Commands.add('buyAndVisualizeCart', () => {
-  cy.deleteCartAPI(user.userID);
+Cypress.Commands.add('buyAndVisualizeOrder', () => {
+  cy.deleteCartAPI(user.userID, user.token)
   cy.visit(url.login)
-  cy.login(user.name, user.password);
+  cy.login(user.name, user.password)
   cy.url().should('include', url.home)
-  pageHome.isBookVisible();
+  pageHome.isBookVisible()
   componentNav.validationNumberCartBadge('0')
-  pageHome.clickAddToCartButton();
-  cy.contains('One Item added to cart').should('be.visible')
+  pageHome.clickAddToCartButton()
+  pageHome.validateAddToCartToast()
   componentNav.validationNumberCartBadge('1')
-  cy.get('.mdc-icon-button.mat-mdc-icon-button.mat-mdc-button-base.mat-unthemed').contains('shopping_cart').click()
-
+  componentNav.goToCart()
+  cy.url().should('include', url.shoppingCart)
+  pageShoppingCart.isBookVisible()
+  pageShoppingCart.clickCheckOutButton()
+  cy.url().should('include', url.checkout)
+  pageCheckout.isCheckoutFormVisible()
+  pageCheckout.fillShippingForm(user.formName, user.address1, user.address2, user.pincode, user.state)
+  pageCheckout.clickPlaceOrder()
+  cy.url().should('include', url.myOrders)
+  cy.get('.mat-mdc-row').should('be.visible')
+  cy.get('.mat-mdc-row').eq(0).click()
 })
 
-//Comprar carrito exitosamente y visualizar orden de compra | Magali Gonzalez
-Cypress.Commands.add('buyAndVisualizeOrder',() => {
-    cy.deleteCartAPI(user.userID, user.token)
-
-    cy.visit(url.login)
-    cy.login(user.name, user.password)
-    cy.url().should('include', url.home)
-
-    pageHome.isBookVisible()
-    componentNav.validationNumberCartBadge('0')
-    pageHome.clickAddToCartButton()
-    pageHome.validateAddToCartToast()
-    componentNav.validationNumberCartBadge('1')
-
-    componentNav.goToCart()
-    cy.url().should('include', url.shoppingCart)
-    pageShoppingCart.isBookVisible()
-    pageShoppingCart.clickCheckOutButton()
-
-    cy.url().should('include', url.checkout)
-    pageCheckout.isCheckoutFormVisible()
-    pageCheckout.fillShippingForm(user.formName, user.address1, user.address2, user.pincode, user.state)
-    pageCheckout.clickPlaceOrder()
-
-    cy.url().should('include', url.myOrders)
-    cy.get('.mat-mdc-row').should('be.visible')
-    cy.get('.mat-mdc-row').eq(0).click()
-
-    // ─── Comando: Filtrar Fantasy y verificar detalle | María Nuñez ──────────────
+// ─── Comando: Filtrar Fantasy y verificar detalle | María Nuñez ──────────────
 Cypress.Commands.add('filtrarFantasyYVerificarDetalle', () => {
   cy.visit(url.login)
   cy.login(user.name, user.password)
@@ -338,7 +234,7 @@ Cypress.Commands.add('filtrarFantasyYVerificarDetalle', () => {
 Cypress.Commands.add('checkoutExitosoAPI', () => {
   cy.request({
     method: 'POST',
-    url: `${url.api}login`,
+    url: `${url.api}/login`,
     failOnStatusCode: false,
     headers: {
       accept: 'application/json',
@@ -348,10 +244,9 @@ Cypress.Commands.add('checkoutExitosoAPI', () => {
   }).then((loginResponse) => {
     const token = `Bearer ${loginResponse.body.token}`
     const userId = loginResponse.body.userDetails.userId
-
     cy.request({
       method: 'POST',
-      url: `${url.api}CheckOut/${userId}`,
+      url: `${url.api}/CheckOut/${userId}`,
       failOnStatusCode: false,
       headers: {
         accept: 'application/json',
@@ -380,14 +275,5 @@ Cypress.Commands.add('checkoutExitosoAPI', () => {
 
 // ─── Comando: Checkout sin token → 401 | María Nuñez ─────────────────────────
 Cypress.Commands.add('checkoutSinTokenAPI', () => {
-  cy.postCheckOutAPI(user.userID, '', 401)
+ cy.postCheckOutAPI(user.userID, '', 401)
 })
-
-
-
-
-/*
-//Credenciales inválidas por API
-
-Cypress.Commands.add('commandName',() => {})
-*/
