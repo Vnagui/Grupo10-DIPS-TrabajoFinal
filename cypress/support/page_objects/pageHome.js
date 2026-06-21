@@ -27,6 +27,21 @@ const pageHome = {
   // Verifica el mensaje de confirmación al agregar a wishlist
   validateAddToWishlistToast() {
     cy.contains('Added to Wishlist!!!').should('exist')
+  },
+ 
+  // Hace clic en una categoría del panel lateral
+  filterByCategory(category) {
+    cy.contains(category).click()
+  },
+
+  // Verifica que hay al menos un libro visible en el catálogo
+  hasBooksVisible() {
+    cy.get('app-book-card').should('have.length.greaterThan', 0)
+  },
+
+  // Verifica que la categoría seleccionada sigue marcada/visible
+  isCategoryLabelVisible(category) {
+    cy.contains(category).should('be.visible')
   }
 
 }

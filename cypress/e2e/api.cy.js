@@ -22,13 +22,18 @@ describe('Casos de prueba de APIs', () => {
         cy.APIlogin('username', 'PasswordIncorrecta', 401);
     })
 
-    it('API | Checkout exitoso con datos válidos | María Nuñez', () => {
-        cy.checkoutExitosoAPI()
+    it('API | Checkout exitoso con datos válidos | María Nuñez', function () {
+    cy.loginAPIFresh(user.name, user.password)
+    cy.get('@freshToken').then((token) => {
+      cy.get('@freshUserId').then((userId) => {
+        cy.checkoutAPI(userId, token, 200)
+      })
     })
+  })
 
-    it('API | Error al comprar carrito sin token | María Nuñez', () => {
-        cy.checkoutSinTokenAPI()
-    })
+  it('API | Error al comprar carrito sin token | María Nuñez', function () {
+    cy.checkoutAPI(user.userID, '', 401)
+  })
 
 })
 

@@ -11,8 +11,7 @@ const pageBookDetail = {
   },
 
   isBookTitleVisible() {
-    cy.get('app-book-details').find('h2, h3, h4, .book-title, mat-card-title').should('be.visible')
-
+    cy.get('app-book-details').find('h3').should('be.visible')
   },
 
   isCategoryFantasy() {

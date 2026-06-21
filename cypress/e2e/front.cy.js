@@ -5,7 +5,7 @@ const componentNav = require('../support/page_objects/componentNav')
 const pageShoppingCart = require('../support/page_objects/pageShoppingCart')
 const pageCheckout = require('../support/page_objects/pageCheckout')
 const pageWishlist = require('../support/page_objects/pageWishlist')
-
+const pageBookDetail = require('../support/page_objects/pageBookDetail')
 describe('Casos de prueba de FRONT', () => {
   before(function () {
     cy.loginAPI(user.name, user.password)
@@ -19,10 +19,21 @@ describe('Casos de prueba de FRONT', () => {
     cy.eliminar_carrito();
   })
 
-  it('Filtrar por categoría Fantasy y verificar detalle de libro | María Nuñez', () => {
-    cy.filtrarFantasyYVerificarDetalle()
-  })
+ it('Filtrar por categoría Fantasy y verificar detalle de libro | María Nuñez', () => {
+    cy.visit(url.login)
+    cy.login(user.name, user.password)
+    cy.url().should('include', url.home)
 
+    cy.filterByCategory('Fantasy')
+    pageHome.hasBooksVisible()
+    pageHome.isCategoryLabelVisible('Fantasy')
+
+    cy.selectFirstBook()
+    pageBookDetail.isDetailPageVisible()
+    pageBookDetail.isBookTitleVisible()
+    pageBookDetail.isCategoryFantasy()
+    pageBookDetail.isAddToCartButtonVisible()
+  })
 
 
   it('Comprar carrito exitosamente y visualizar orden de compra | Magali Gonzalez', function () {

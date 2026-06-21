@@ -215,65 +215,61 @@ Cypress.Commands.add('buyAndVisualizeOrder', () => {
   cy.get('.mat-mdc-row').eq(0).click()
 })
 
-// ─── Comando: Filtrar Fantasy y verificar detalle | María Nuñez ──────────────
-Cypress.Commands.add('filtrarFantasyYVerificarDetalle', () => {
-  cy.visit(url.login)
-  cy.login(user.name, user.password)
-  cy.url().should('include', url.home)
-  pageHome.isBookVisible()
-  cy.contains('Fantasy').click()
-  cy.get('app-book-card').should('have.length.greaterThan', 0)
-  pageBookDetail.clickFirstBook()
-  pageBookDetail.isDetailPageVisible()
-  pageBookDetail.isBookTitleVisible()
-  pageBookDetail.isCategoryFantasy()
-  pageBookDetail.isAddToCartButtonVisible()
+// ─── Comando: Filtrar por categoría (UI) | María Nuñez ───────────────────────
+Cypress.Commands.add('filterByCategory', (category) => {
+  pageHome.filterByCategory(category)
 })
 
-// ─── Comando: Checkout exitoso con login automático | María Nuñez ─────────────
-Cypress.Commands.add('checkoutExitosoAPI', () => {
+// ─── Comando: Seleccionar primer libro del catálogo | María Nuñez ───────────
+Cypress.Commands.add('selectFirstBook', () => {
+  pageBookDetail.clickFirstBook()
+})
+
+// ─── Comando: Login vía API (obtiene token + userId frescos) | María Nuñez ──
+Cypress.Commands.add('loginAPIFresh', (username, password) => {
   cy.request({
     method: 'POST',
-    url: `${url.api}/login`,
+    url: `${url.api}login`,
     failOnStatusCode: false,
     headers: {
       accept: 'application/json',
       'content-type': 'application/json'
     },
-    body: { username: user.name, password: user.password }
-  }).then((loginResponse) => {
-    const token = `Bearer ${loginResponse.body.token}`
-    const userId = loginResponse.body.userDetails.userId
-    cy.request({
-      method: 'POST',
-      url: `${url.api}/CheckOut/${userId}`,
-      failOnStatusCode: false,
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        authorization: token
-      },
-      body: {
-        orderDetails: [{
-          book: {
-            bookId: 15,
-            title: 'string',
-            author: 'string',
-            category: 'string',
-            price: 0,
-            coverFileName: 'string'
-          },
-          quantity: 1
-        }],
-        cartTotal: 0
-      }
-    }).then((response) => {
-      expect(response.status).to.eq(200)
-    })
+    body: { username, password }
+  }).then((response) => {
+    const token = `Bearer ${response.body.token}`
+    const userId = response.body.userDetails.userId
+    cy.wrap(token).as('freshToken')
+    cy.wrap(userId).as('freshUserId')
   })
 })
 
-// ─── Comando: Checkout sin token → 401 | María Nuñez ─────────────────────────
-Cypress.Commands.add('checkoutSinTokenAPI', () => {
- cy.postCheckOutAPI(user.userID, '', 401)
+// ─── Comando: POST Checkout (acción reutilizable) | María Nuñez ─────────────
+Cypress.Commands.add('checkoutAPI', (userId, token, expectedStatus) => {
+  cy.request({
+    method: 'POST',
+    url: `${url.api}CheckOut/${userId}`,
+    failOnStatusCode: false,
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      authorization: token
+    },
+    body: {
+      orderDetails: [{
+        book: {
+          bookId: 15,
+          title: 'string',
+          author: 'string',
+          category: 'string',
+          price: 0,
+          coverFileName: 'string'
+        },
+        quantity: 1
+      }],
+      cartTotal: 0
+    }
+  }).then((response) => {
+    expect(response.status).to.eq(expectedStatus)
+  })
 })
